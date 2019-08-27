@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<script src="https://apps.bdimg.com/libs/jquery/1.11.1/jquery.min.js"></script>
+<style>
+body {
+	margin: 0;
+}
+.canlder_wrap {
+	position: relative;
+}
+.canlder {
+	display: flex;
+	flex-wrap: wrap;
+	padding-left: 100px;
+	padding-right: 100px;
+}
+.canlder > div {
+	width: 14.28571%;
+	min-height: 50px;
+	border: 1px solid #ccc;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+.canlder > div.headline {
+	width: 100%;
+}
+.headline {
+	background-color: #3181c3;
+	color: #fff;
+	font-size: 24px;
+	font-weight: 700;
+}
+.prev, .next {
+	width: 50px;
+	height: 50px;
+	background-color: #000;
+	cursor: pointer;
+	position: absolute;
+	top: 50%;
+	transform: translate(0,-50%);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.prev {
+	left: 0;
+}
+.next {
+	right: 0;
+}
+</style>
+</head>
+<body>
+<div class="canlder_obj"></div>
+<script>
+function Canlder(o){
+	var _ = this;
+	_.o = $(o);	
+	_.init();
+	_.draw_canlder(_.current_date);
+	_.prev.on('click',function(){
+		_.draw_canlder(_.current_date.setMonth(_.current_date.getMonth()-1));
+	});
+	_.next.on('click',function(){
+		_.draw_canlder(_.current_date.setMonth(_.current_date.getMonth()+1));
+	});
+}
+Canlder.prototype.init = function(){
+	_.month_days = [31,28,31,30,31,30,31,31,30,31,30,31];
+	_.day_name = ['日','一','二','三','四','五','六'];
+	_.o.addClass('canlder_wrap');
+	_.current_date = new Date();
+	_.canlder = $('<div class="canlder"></div>');
+	_.prev = $('<div class="prev"><</div>');
+	_.next = $('<div class="next">></div>');
+	_.o.append(_.prev);
+	_.o.append(_.canlder);
+	_.o.append(_.next);
+}
+Canlder.prototype.is_leap = function(y) {
+	//是否潤年
+	var days = (+new Date(''+(y+1)) - +new Date(''+y))/1000/60/60/24;
+	return days == 366 ? 29:28;
+}
+Canlder.prototype.draw_canlder = function(date) {
+	var _ = this;
+	_._date = new Date(date);
+	_.month = _._date.getMonth();
+	_.days = _.month==1?is_leap(_._date.getFullYear()):_.month_days[_.month];
+	_.first_day = _.getDay(_._date,1);
+	_.last_day = _.getDay(_._date,_.days);
+	_.html = '<div class="headline">'+_._date.getFullYear()+'-'+(_._date.getMonth()+1)+'</div>';
+	for(var i=0;i<7;i++){
+		_.html+='<div>'+_.day_name[i]+'</div>';
+	}
+	for(var i=0;i<_.first_day;i++){
+		_.html+='<div></div>';
+	}
+	for(var i=1;i<=_.days;i++){
+		_.html+='<div>'+i+'</div>'
+	}
+	for(var i=_.last_day;i<6;i++){
+		_.html+='<div></div>';
+	}
+	_.canlder.html(_.html);
+}
+Canlder.prototype.getDay = function(date,day){
+	var _ = this;
+	date.setDate(day);
+	return date.getDay();
+}
+new Canlder('.canlder_obj');
+</script>
+</body>
+</html>
