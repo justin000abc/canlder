@@ -41,13 +41,13 @@ body {
 	justify-content: center;
 	box-sizing: border-box;
 }
-.canlder_wrap .headline.s_month + .canlder > div {
+.canlder_wrap.s_month .canlder > div {
 	width: 25%;
 }
-.canlder_wrap .headline.s_year {
+.canlder_wrap.s_year .headline {
 	display: none;
 }
-.canlder_wrap .headline.s_year + .canlder > div {
+.canlder_wrap.s_year .canlder > div {
 	width: 10%;
 }
 .canlder_wrap .prev, .canlder_wrap .next {
@@ -94,30 +94,21 @@ function Canlder(o){
 		if(_.mode==2){
 			_.mode = 3;
 			_.draw_month(_.current_date.getFullYear());
-			this.classList.remove('s_month');
-			this.classList.add('s_year');
 		}else if(_.mode==1){
 			_.mode = 2;
 			_.draw_month(_.current_date.getFullYear());
-			this.classList.add('s_month');
-			_.o.addClass('hide_arrow');
 		}
-		_.headline_txt();
 	});
 	_.o.on('click','[data-date]',function(){
 		if(_.mode==2){
 			_.mode = 1;
 			_.current_date.setMonth(this.getAttribute('data-date')-1);
 			_.draw_canlder(_.current_date);
-			_.headline.removeClass('s_month');
-			_.o.removeClass('hide_arrow');
 		}else if(_.mode==3){
 			_.mode = 2;
 			_.current_date.setFullYear(this.getAttribute('data-date'));
 			_.draw_month();
-			_.headline.removeClass('s_year').addClass('s_month');
-		}
-		_.headline_txt();
+		}		
 	});
 }
 Canlder.prototype.init = function(){
@@ -142,7 +133,7 @@ Canlder.prototype.draw_canlder = function(date) {
 	var _ = this;
 	var _date = new Date(date);
 	var month = _date.getMonth();
-	var days = month==1?is_leap(_date.getFullYear()):_.month_days[month];
+	var days = month==1?_.is_leap(_date.getFullYear()):_.month_days[month];
 	var first_day = _.getDay(_date,1);
 	var last_day = _.getDay(_date,days);
 	var html = '';
@@ -160,6 +151,7 @@ Canlder.prototype.draw_canlder = function(date) {
 	}
 	_.canlder.html(html);
 	_.headline_txt();
+	_.o.removeClass('hide_arrow').removeClass('s_month').removeClass('s_year');;
 }
 Canlder.prototype.draw_month = function(){
 	var _ = this;
@@ -168,20 +160,24 @@ Canlder.prototype.draw_month = function(){
 		for(var i in _.month_name){
 			html+='<div data-date="'+(parseInt(i)+1)+'">'+_.month_name[i]+'月</div>';
 		}
-	}else{
+		_.o.addClass('s_month').removeClass('s_year');
+	}else if(_.mode==3){
 		for(var i=1951;i<=2050;i++){
 			html+='<div data-date="'+i+'">'+i+'</div>';
 		}
+		_.o.removeClass('s_month').addClass('s_year');
 	}
 	_.canlder.html(html);
+	_.headline_txt();
+	_.o.addClass('hide_arrow');
 }
 Canlder.prototype.headline_txt = function(){
 	var _ = this;
 	if(_.mode==1){
 		_.headline.text(_.current_date.getFullYear()+'-'+(_.current_date.getMonth()+1));
-	}else if(_.mode==2){
+	}else{
 		_.headline.text(_.current_date.getFullYear());
-	}else{}
+	}
 }
 Canlder.prototype.getDay = function(date,day){
 	var _ = this;
