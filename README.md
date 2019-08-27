@@ -1,7 +1,7 @@
 # canlder
 月曆含行事曆功能
 
-[CODEPEN](https://codepen.io/justin000abc/pen/gOYWLEB 'target="_blank"')
+[CODEPEN](https://codepen.io/justin000abc/pen/gOYWLEB)
 
 new Canlder(要生成月曆的物件,行事曆);
 
