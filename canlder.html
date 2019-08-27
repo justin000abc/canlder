@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<title>Examples</title>
+<title>canlder</title>
 <script src="https://apps.bdimg.com/libs/jquery/1.11.1/jquery.min.js"></script>
 <style>
 body {
@@ -11,32 +11,46 @@ body {
 }
 .canlder_wrap {
 	position: relative;
-}
-.canlder {
-	display: flex;
-	flex-wrap: wrap;
 	padding-left: 100px;
 	padding-right: 100px;
 }
-.canlder > div {
+.canlder_wrap .canlder {
+	display: flex;
+	flex-wrap: wrap;
+	border-left: 1px solid #ccc;
+}
+.canlder_wrap .canlder > div.headline {
+	width: 100%;
+}
+.canlder_wrap .headline {
+	background-color: #3181c3;
+	color: #fff;
+	font-size: 24px;
+	font-weight: 700;
+	text-align: center;
+	padding: 10px;
+	cursor: pointer;
+}
+.canlder_wrap .canlder > div {
 	width: 14.28571%;
 	min-height: 50px;
-	border: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
 }
-.canlder > div.headline {
-	width: 100%;
+.canlder_wrap .headline.s_month + .canlder > div {
+	width: 25%;
 }
-.headline {
-	background-color: #3181c3;
-	color: #fff;
-	font-size: 24px;
-	font-weight: 700;
+.canlder_wrap .headline.s_year {
+	display: none;
 }
-.prev, .next {
+.canlder_wrap .headline.s_year + .canlder > div {
+	width: 10%;
+}
+.canlder_wrap .prev, .canlder_wrap .next {
 	width: 50px;
 	height: 50px;
 	background-color: #000;
@@ -49,10 +63,13 @@ body {
 	align-items: center;
 	justify-content: center;
 }
-.prev {
+.canlder_wrap.hide_arrow .prev, .canlder_wrap.hide_arrow .next {
+	display: none;
+}
+.canlder_wrap .prev {
 	left: 0;
 }
-.next {
+.canlder_wrap .next {
 	right: 0;
 }
 </style>
@@ -62,7 +79,9 @@ body {
 <script>
 function Canlder(o){
 	var _ = this;
-	_.o = $(o);	
+	_.o = $(o);
+	//2選月,3選年	
+	_.mode = 1;
 	_.init();
 	_.draw_canlder(_.current_date);
 	_.prev.on('click',function(){
@@ -71,18 +90,48 @@ function Canlder(o){
 	_.next.on('click',function(){
 		_.draw_canlder(_.current_date.setMonth(_.current_date.getMonth()+1));
 	});
+	_.headline.on('click',function(){
+		if(_.mode==2){
+			_.mode = 3;
+			_.draw_month(_.current_date.getFullYear());
+			this.classList.remove('s_month');
+			this.classList.add('s_year');
+		}else if(_.mode==1){
+			_.mode = 2;
+			_.draw_month(_.current_date.getFullYear());
+			this.classList.add('s_month');
+			_.o.addClass('hide_arrow');
+		}
+		_.headline_txt();
+	});
+	_.o.on('click','[data-date]',function(){
+		if(_.mode==2){
+			_.mode = 1;
+			_.current_date.setMonth(this.getAttribute('data-date')-1);
+			_.draw_canlder(_.current_date);
+			_.headline.removeClass('s_month');
+			_.o.removeClass('hide_arrow');
+		}else if(_.mode==3){
+			_.mode = 2;
+			_.current_date.setFullYear(this.getAttribute('data-date'));
+			_.draw_month();
+			_.headline.removeClass('s_year').addClass('s_month');
+		}
+		_.headline_txt();
+	});
 }
 Canlder.prototype.init = function(){
+	var _ = this;
 	_.month_days = [31,28,31,30,31,30,31,31,30,31,30,31];
 	_.day_name = ['日','一','二','三','四','五','六'];
+	_.month_name = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
 	_.o.addClass('canlder_wrap');
 	_.current_date = new Date();
 	_.canlder = $('<div class="canlder"></div>');
 	_.prev = $('<div class="prev"><</div>');
 	_.next = $('<div class="next">></div>');
-	_.o.append(_.prev);
-	_.o.append(_.canlder);
-	_.o.append(_.next);
+	_.headline = $('<div class="headline"></div>')
+	_.o.append(_.prev).append(_.headline).append(_.canlder).append(_.next);
 }
 Canlder.prototype.is_leap = function(y) {
 	//是否潤年
@@ -91,25 +140,48 @@ Canlder.prototype.is_leap = function(y) {
 }
 Canlder.prototype.draw_canlder = function(date) {
 	var _ = this;
-	_._date = new Date(date);
-	_.month = _._date.getMonth();
-	_.days = _.month==1?is_leap(_._date.getFullYear()):_.month_days[_.month];
-	_.first_day = _.getDay(_._date,1);
-	_.last_day = _.getDay(_._date,_.days);
-	_.html = '<div class="headline">'+_._date.getFullYear()+'-'+(_._date.getMonth()+1)+'</div>';
+	var _date = new Date(date);
+	var month = _date.getMonth();
+	var days = month==1?is_leap(_date.getFullYear()):_.month_days[month];
+	var first_day = _.getDay(_date,1);
+	var last_day = _.getDay(_date,days);
+	var html = '';
 	for(var i=0;i<7;i++){
-		_.html+='<div>'+_.day_name[i]+'</div>';
+		html+='<div>'+_.day_name[i]+'</div>';
 	}
-	for(var i=0;i<_.first_day;i++){
-		_.html+='<div></div>';
+	for(var i=0;i<first_day;i++){
+		html+='<div></div>';
 	}
-	for(var i=1;i<=_.days;i++){
-		_.html+='<div>'+i+'</div>'
+	for(var i=1;i<=days;i++){
+		html+='<div>'+i+'</div>';
 	}
-	for(var i=_.last_day;i<6;i++){
-		_.html+='<div></div>';
+	for(var i=last_day;i<6;i++){
+		html+='<div></div>';
 	}
-	_.canlder.html(_.html);
+	_.canlder.html(html);
+	_.headline_txt();
+}
+Canlder.prototype.draw_month = function(){
+	var _ = this;
+	var html = '';
+	if(_.mode==2){
+		for(var i in _.month_name){
+			html+='<div data-date="'+(parseInt(i)+1)+'">'+_.month_name[i]+'月</div>';
+		}
+	}else{
+		for(var i=1951;i<=2050;i++){
+			html+='<div data-date="'+i+'">'+i+'</div>';
+		}
+	}
+	_.canlder.html(html);
+}
+Canlder.prototype.headline_txt = function(){
+	var _ = this;
+	if(_.mode==1){
+		_.headline.text(_.current_date.getFullYear()+'-'+(_.current_date.getMonth()+1));
+	}else if(_.mode==2){
+		_.headline.text(_.current_date.getFullYear());
+	}else{}
 }
 Canlder.prototype.getDay = function(date,day){
 	var _ = this;
