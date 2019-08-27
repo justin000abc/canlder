@@ -13,11 +13,13 @@ body {
 	position: relative;
 	padding-left: 100px;
 	padding-right: 100px;
+	user-select: none;
 }
 .canlder_wrap .canlder {
 	display: flex;
 	flex-wrap: wrap;
 	border-left: 1px solid #ccc;
+	border-top: 1px solid #ccc;
 }
 .canlder_wrap .canlder > div.headline {
 	width: 100%;
@@ -42,11 +44,15 @@ body {
 	box-sizing: border-box;
 	flex-direction: column;
 	padding: 10px 5px 10px 10px;
+	transition: background-color 0.3s ease;
+}
+.canlder_wrap .canlder > div.today {
+	background-color: #ffc;
 }
 .canlder_wrap .canlder .matter {
 	font-size: 12px;
 	position: relative;
-	padding-left: 10px;
+	padding-left: 6px;
 	margin-left: -5px;
 }
 .canlder_wrap .canlder .matter:before {
@@ -69,6 +75,9 @@ body {
 .canlder_wrap.s_year .canlder > div {
 	width: 10%;
 	cursor: pointer;
+}
+.canlder_wrap.s_month .canlder > div:hover, .canlder_wrap.s_year .canlder > div:hover {
+	background-color: #ccc;
 }
 .canlder_wrap .prev, .canlder_wrap .next {
 	width: 50px;
@@ -138,6 +147,7 @@ Canlder.prototype.init = function(){
 	_.day_name = ['日','一','二','三','四','五','六'];
 	_.month_name = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
 	_.o.addClass('canlder_wrap');
+	_.today = new Date();
 	_.current_date = new Date();
 	_.canlder = $('<div class="canlder"></div>');
 	_.prev = $('<div class="prev"><</div>');
@@ -158,6 +168,7 @@ Canlder.prototype.draw_canlder = function(date) {
 	var first_day = _.getDay(_date,1);
 	var last_day = _.getDay(_date,days);
 	var filter_date = _date.getFullYear()+'-'+(_date.getMonth()+1);
+	var is_today = _.today.getFullYear()==_date.getFullYear()&&_.today.getMonth()==_date.getMonth()?true:false;
 	var result = _.s.filter(function(item){
 		return item[0].match(filter_date);
 	});
@@ -170,10 +181,11 @@ Canlder.prototype.draw_canlder = function(date) {
 	}
 	for(var i=1;i<=days;i++){
 		var count = 0;
+		var cla = is_today&&_.today.getDate()==i?' class="today"':'';
 		_.matter = result.filter(function(item){
 			return item[0].split('-')[2]==i
 		});
-		html+='<div><div>'+i+'</div>';
+		html+='<div'+cla+'><div>'+i+'</div>';
 		_.matter.forEach(function(item){
 			html+='<div class="matter">'+item[1]+'</div>';
 		});
