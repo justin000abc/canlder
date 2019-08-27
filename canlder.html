@@ -40,15 +40,35 @@ body {
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
+	flex-direction: column;
+	padding: 10px 5px 10px 10px;
+}
+.canlder_wrap .canlder .matter {
+	font-size: 12px;
+	position: relative;
+	padding-left: 10px;
+	margin-left: -5px;
+}
+.canlder_wrap .canlder .matter:before {
+	content: "";
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background-color: #f00;
+	position: absolute;
+	top: 5px;
+	left: 0;
 }
 .canlder_wrap.s_month .canlder > div {
 	width: 25%;
+	cursor: pointer;
 }
 .canlder_wrap.s_year .headline {
 	display: none;
 }
 .canlder_wrap.s_year .canlder > div {
 	width: 10%;
+	cursor: pointer;
 }
 .canlder_wrap .prev, .canlder_wrap .next {
 	width: 50px;
@@ -77,9 +97,10 @@ body {
 <body>
 <div class="canlder_obj"></div>
 <script>
-function Canlder(o){
+function Canlder(o,schedule){
 	var _ = this;
 	_.o = $(o);
+	_.s = Object.create(schedule);
 	//2選月,3選年	
 	_.mode = 1;
 	_.init();
@@ -136,6 +157,10 @@ Canlder.prototype.draw_canlder = function(date) {
 	var days = month==1?_.is_leap(_date.getFullYear()):_.month_days[month];
 	var first_day = _.getDay(_date,1);
 	var last_day = _.getDay(_date,days);
+	var filter_date = _date.getFullYear()+'-'+(_date.getMonth()+1);
+	var result = _.s.filter(function(item){
+		return item[0].match(filter_date);
+	});
 	var html = '';
 	for(var i=0;i<7;i++){
 		html+='<div>'+_.day_name[i]+'</div>';
@@ -144,7 +169,15 @@ Canlder.prototype.draw_canlder = function(date) {
 		html+='<div></div>';
 	}
 	for(var i=1;i<=days;i++){
-		html+='<div>'+i+'</div>';
+		var count = 0;
+		_.matter = result.filter(function(item){
+			return item[0].split('-')[2]==i
+		});
+		html+='<div><div>'+i+'</div>';
+		_.matter.forEach(function(item){
+			html+='<div class="matter">'+item[1]+'</div>';
+		});
+		html+='</div>';
 	}
 	for(var i=last_day;i<6;i++){
 		html+='<div></div>';
@@ -184,7 +217,13 @@ Canlder.prototype.getDay = function(date,day){
 	date.setDate(day);
 	return date.getDay();
 }
-new Canlder('.canlder_obj');
+var canlder_json = [
+	['2019-5-20','小明生日'],
+	['2019-8-20','小華生日'],
+	['2019-8-20','小美結婚'],
+	['2019-8-27','睡覺']
+]
+new Canlder('.canlder_obj',canlder_json);
 </script>
 </body>
 </html>
